@@ -1,0 +1,11 @@
+{
+	"name": "flower_plant",
+	"stochastic": false,
+	"initial": "T",
+	"angle_deg": 120,
+	"num_iters": 6,
+	"rules": {
+		"T": "F[+T][-T]",
+		"F": "FF"
+	}
+}
