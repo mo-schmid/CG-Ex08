@@ -3,6 +3,7 @@
 #include <stack>
 #include <memory>
 #include <iostream>
+#include <numeric>
 
 std::string LindenmayerSystemDeterministic::expandSymbol(unsigned char const& sym) {
     /*============================================================
@@ -35,7 +36,7 @@ std::string LindenmayerSystem::expandOnce(std::string const& symbol_sequence) {
     */
     std::string new_sequence = "";
 
-    for (auto it = symbol_sequence.begin(); it != symbol_sequence.end(); it++)
+    for (auto it = symbol_sequence.begin(); it != symbol_sequence.end(); ++it)
     {
         new_sequence.append(expandSymbol(*it));
     }
@@ -89,7 +90,7 @@ std::vector<Segment> LindenmayerSystem::draw(std::string const& symbols) {
     double rotation_angle_rad = deg2rad(rotation_angle_deg);
 
 
-    for (auto it = symbols.begin(); it != symbols.end(); it++)
+    for (auto it = symbols.begin(); it != symbols.end(); ++it)
     {
         switch (*it) {
         case '[':
@@ -140,8 +141,56 @@ std::string LindenmayerSystemStochastic::expandSymbol(unsigned char const& sym) 
 
         Use dice.roll() to get a random number between 0 and 1
     */
+
+    std::string new_sym = "";
+    std::vector<StochasticRule> probs;
+    double lastProb = 0.0;              
+    std::vector<std::pair<double,double>> ranges;
+
+    auto search = rules.find(sym);
+    if (search != rules.end()) {
+        probs = search->second;  // Store probabilities
+
+        // Stores e.g. 0.0 and 0.33, 0.33 and 0.66, 0.66 and 1.00 to have the ranges
+        for (auto it = probs.begin(); it != probs.end(); ++it)
+        {
+            double newProb = it->probability + lastProb;
+            ranges.push_back({ lastProb, newProb });
+            //std::cout << (ranges.end()-1)->first << " to " << (ranges.end()-1)->second << std::endl;  // DEBUG
+            lastProb = newProb;
+        }
+        
+        // Roll the dice!
+        double rand = dice.roll();
+        //std::cout << rand << std::endl;   // DEBUG
+
+        // Find ranges index, where rand fits between pair.
+        auto itr = std::find_if(ranges.begin(), ranges.end(),
+            [&rand](std::pair<double, double> x) {return (rand >= x.first && rand <= x.second); });
+        
+        int idx = 0;
+        if (itr == ranges.end())
+        {
+            std::cout << "No element found?!" << std::endl;
+        }
+        else
+        {
+            idx = std::distance(ranges.begin(), itr);
+            //std::cout << "Element found at index: " << idx << std::endl; //DEBUG
+        }
+
+        // Take expression by index from probs
+        new_sym = probs.at(idx).expansion;
+        //std::cout << new_sym << std::endl;;   // DEBUG
+        
+
+    }
+    else {
+        new_sym = { char(sym) };
+    }
     
-    return {char(sym)};
+    
+    return new_sym;
 }
 
 void LindenmayerSystemDeterministic::addRuleDeterministic(unsigned char sym, std::string const& expansion) {
