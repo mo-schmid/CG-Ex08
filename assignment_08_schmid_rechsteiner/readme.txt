@@ -7,12 +7,15 @@ Team
 
 Part 1:
 ********
-
+- with the use of the map the lookup to replace the symbols was straight forward.
+- reuse of the first function allowed for a simple implementarion of the "expandOnce" function.
+- expanding multiple times is just a multiple calling of the expandOnce function.
 
 
 Part 2:
 ********
-
+- a switch satement was very helpful to implement the beahaviour for the different symbols.
+- by storing all the necessary values (position, direction and state at branches) it was straight forward to generate the line segments. 
 
 
 Part 3:
